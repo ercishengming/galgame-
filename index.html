@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的个人秘密基地</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
+
+    <nav class="bg-emerald-600 text-white shadow-md">
+        <div class="max-w-6xl mx-auto px-4 flex justify-between items-center h-16">
+            <div class="text-xl font-bold">🌿 个人空间</div>
+            <div class="flex space-x-2">
+                <button onclick="switchTab('galgame')" id="btn-galgame" class="px-3 py-2 rounded-md text-sm font-medium bg-emerald-700">📅 历史今日</button>
+                <button onclick="switchTab('plants')" id="btn-plants" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-emerald-500">🌿 植物志</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow max-w-4xl w-full mx-auto p-6">
+        
+        <div id="date-card" class="bg-white rounded-2xl shadow-sm p-6 text-center border border-gray-100 mb-6">
+            <p class="text-xs uppercase tracking-widest text-emerald-600 font-bold mb-1">TODAY IS</p>
+            <h1 id="current-date" class="text-3xl font-extrabold text-gray-900">加载中...</h1>
+        </div>
+
+        <div id="page-galgame" class="space-y-4">
+            <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">🎮 Galgame 历史上的今天</h2>
+                <div id="galgame-list" class="relative border-l-2 border-emerald-200 ml-4 space-y-8 pb-4">
+                    <p class="text-gray-400 text-center py-6">正在同步云端事件...</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="page-plants" class="hidden space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="plants-grid">
+                <p class="text-gray-400 text-center py-6 col-span-full">正在浇灌植物墙...</p>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="bg-gray-800 text-gray-400 text-center py-4 text-xs mt-10">
+        © 2026 免服务器个人空间 · 数据托管于 GitHub
+    </footer>
+
+    <script>
+        // 全局变量存放从 json 异步获取的数据
+        let globalData = { galgames: [], plants: [] };
+
+        window.onload = function() {
+            // 1. 设置并显示今天日期
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            document.getElementById('current-date').innerText = `${year}年${month}月${day}日`;
+
+            // 2. 核心：从同级目录读取 data.json
+            fetch('./data.json')
+                .then(response => {
+                    if (!response.ok) throw new Error('无法读取数据文件');
+                    return response.json();
+                })
+                .then(data => {
+                    globalData = data;
+                    // 渲染页面
+                    renderGalgames(`${month}-${day}`);
+                    renderPlants();
+                })
+                .catch(err => {
+                    console.error(err);
+                    document.getElementById('galgame-list').innerHTML = `<p class="text-red-500 text-center py-6">数据加载失败，请检查 data.json 格式是否正确。</p>`;
+                });
+        };
+
+        // 标签页切换逻辑
+        function switchTab(tab) {
+            ["galgame", "plants"].forEach(t => {
+                document.getElementById(`page-${t}`).classList.add('hidden');
+                document.getElementById(`btn-${t}`).classList.remove('bg-emerald-700');
+            });
+            document.getElementById(`page-${tab}`).classList.remove('hidden');
+            document.getElementById(`btn-${tab}`).classList.add('bg-emerald-700');
+            
+            if(tab === 'galgame') document.getElementById('date-card').classList.remove('hidden');
+            else document.getElementById('date-card').classList.add('hidden');
+        }
+
+        // 渲染 Galgame 列表
+        function renderGalgames(todayStr) {
+            const listContainer = document.getElementById('galgame-list');
+            const filtered = globalData.galgames.filter(g => g.date === todayStr);
+            
+            if(filtered.length === 0) {
+                listContainer.innerHTML = `<p class="text-gray-400 text-center py-6">今天似乎平平淡淡呢……去 data.json 加点事件吧！</p>`;
+                return;
+            }
+
+            listContainer.innerHTML = filtered.map(g => `
+                <div class="relative pl-6">
+                    <div class="absolute -left-[9px] top-1.5 w-4 h-4 rounded-full bg-emerald-600 border-4 border-white shadow"></div>
+                    <h3 class="text-lg font-bold text-gray-900">${g.title}</h3>
+                    <p class="text-gray-600 mt-1">${g.desc}</p>
+                </div>
+            `).join('');
+        }
+
+        // 渲染植物网格
+        function renderPlants() {
+            const grid = document.getElementById('plants-grid');
+            if(globalData.plants.length === 0) {
+                grid.innerHTML = `<p class="text-gray-400 text-center py-6 col-span-full">温室里还没有植物...</p>`;
+                return;
+            }
+            grid.innerHTML = globalData.plants.map(p => `
+                <div class="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 flex flex-col">
+                    <img class="h-48 w-full object-cover" src="${p.img}" alt="${p.name}" onerror="this.src='https://images.unsplash.com/photo-1463936575829-25148e1db1b8?w=500'">
+                    <div class="p-4 flex-grow">
+                        <h2 class="text-lg font-bold text-gray-900 mb-1">${p.name}</h2>
+                        <p class="text-gray-600 text-sm leading-relaxed">${p.desc}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+    </script>
+</body>
+</html>
