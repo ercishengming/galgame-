@@ -58,7 +58,7 @@
             const day = String(today.getDate()).padStart(2, '0');
             document.getElementById('current-date').innerText = `${year}年${month}月${day}日`;
 
-            // 2. 核心：从同级目录读取 data.json
+            // 2. 从同级目录读取 data.json
             fetch('./data.json')
                 .then(response => {
                     if (!response.ok) throw new Error('无法读取数据文件');
@@ -66,8 +66,8 @@
                 })
                 .then(data => {
                     globalData = data;
-                    // 渲染页面
-                    renderGalgames(`${month}-${day}`);
+                    // 【核心改动 1】：同时传入 “月-日” 和 “年-月-日”
+                    renderGalgames(`${month}-${day}`, `${year}-${month}-${day}`);
                     renderPlants();
                 })
                 .catch(err => {
@@ -89,10 +89,12 @@
             else document.getElementById('date-card').classList.add('hidden');
         }
 
-        // 渲染 Galgame 列表
-        function renderGalgames(todayStr) {
+        // 【核心改动 2】：修改渲染逻辑，使其同时兼容两种格式
+        function renderGalgames(monthDayStr, fullDateStr) {
             const listContainer = document.getElementById('galgame-list');
-            const filtered = globalData.galgames.filter(g => g.date === todayStr);
+            
+            // 只要 json 里的 date 匹配 “月-日” 或者是精确的 “年-月-日”，都会被筛选出来
+            const filtered = globalData.galgames.filter(g => g.date === monthDayStr || g.date === fullDateStr);
             
             if(filtered.length === 0) {
                 listContainer.innerHTML = `<p class="text-gray-400 text-center py-6">今天似乎平平淡淡呢……去 data.json 加点事件吧！</p>`;
