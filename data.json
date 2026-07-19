@@ -47,7 +47,7 @@
     },
     {
       "date": "2026-07-21",
-      "title": "《三角圆舞曲》发售",
+      "title": "《三角圆舞曲》延期",
       "desc": "kagami games发行"
     },
     {
@@ -61,7 +61,7 @@
       "desc": ""
     },
     {
-      "date": "下半年",
+      "date": "2026-08-25",
       "title": "《千层恋心》",
       "desc": "音符社重置 kagami games发行"
     },
@@ -94,6 +94,11 @@
       "date": "2026-09-10",
       "title": "《向日葵的教会与漫长的暑假》发售",
       "desc": "枕社制作 kagami games发行"
+    },
+    {
+      "date": "2026-08-10",
+      "title": "《小小吸血姬》发售",
+      "desc": "kagami games发行"
     }
   ],
   "plants": [
